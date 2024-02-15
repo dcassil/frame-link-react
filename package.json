@@ -1,6 +1,6 @@
 {
   "name": "frame-link-react",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Async postMessage provider for communicating with iframe",
   "main": "dist/FrameLinkContext.js",
   "types": "dist/FrameLinkContext.d.ts",
