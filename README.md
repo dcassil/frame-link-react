@@ -2,7 +2,12 @@
 
 Frame Link is a lightweight library that makes two way async communication, between a parent site and iframe, easy.
 
-## !! You have to install the package on both the parent and frame.
+# notes.
+
+There will be breaking changes until v1.0.0 so just know that.
+I think I am going to add state management in the provider to kepp track of listner data so you do not have to implement that on your own.
+
+# !! You have to install the package on both the parent and frame.
 
 You can mix and match frame-link and frame-link-react ( one on iFrame and one on Parent )
 
@@ -85,7 +90,6 @@ export default function App() {
 import {FrameLinkContext} from 'frame-link-react';
 
 export default function MyOtherComponent() {
-    const frameRef = useRef();
     const {ready, registerTarget, postMessage} = useContext(FrameLinkContext)
 
     useEffect(() => {
@@ -97,15 +101,12 @@ export default function MyOtherComponent() {
     }, [ready])
 
     useEffect(() => {
-        if (!!frameRef) {
-            registerTarget(frameRef)
-        }
-
-    }, [frameRef])
+        registerTarget(window.parent)
+    }, [])
 
     return (
         <div >
-            <iframe ref={frameRef} />
+           ...
         </div>
     )
 }
