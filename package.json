@@ -1,9 +1,9 @@
 {
   "name": "frame-link-react",
-  "version": "0.0.10",
+  "version": "0.0.19",
   "description": "Async postMessage provider for communicating with iframe",
-  "main": "dist/FrameLinkContext.js",
-  "types": "dist/FrameLinkContext.d.ts",
+  "main": "dist/FrameLinkProvider.js",
+  "types": "dist/FrameLinkProvider.d.ts",
   "scripts": {
     "build": "tsc"
   },
@@ -14,9 +14,13 @@
     "@types/react-dom": "^18.2.19",
     "typescript": "^5.3.3"
   },
+  "peerDependencies": {
+    "react": ">=16.3.0",
+    "react-dom": ">=16.3.0"
+  },
   "dependencies": {
     "frame-link": "^0.0.5",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "recoil": "^0.7.7",
+    "state-pool": "^0.10.1"
   }
 }
