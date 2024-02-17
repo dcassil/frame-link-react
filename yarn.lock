@@ -3,100 +3,54 @@
 
 
 "@types/prop-types@*":
-  "integrity" "sha512-ga8y9v9uyeiLdpKddhxYQkxNDrfvuPrlFb0N1qnZZByvcElJaXthF1UhvCh9TLWJBEHeNtdnbysW7Y6Uq8CVng=="
-  "resolved" "https://registry.npmjs.org/@types/prop-types/-/prop-types-15.7.11.tgz"
-  "version" "15.7.11"
+  version "15.7.11"
+  resolved "https://registry.npmjs.org/@types/prop-types/-/prop-types-15.7.11.tgz"
+  integrity sha512-ga8y9v9uyeiLdpKddhxYQkxNDrfvuPrlFb0N1qnZZByvcElJaXthF1UhvCh9TLWJBEHeNtdnbysW7Y6Uq8CVng==
 
 "@types/react-dom@^18.2.19":
-  "integrity" "sha512-aZvQL6uUbIJpjZk4U8JZGbau9KDeAwMfmhyWorxgBkqDIEf6ROjRozcmPIicqsUwPUjbkDfHKgGee1Lq65APcA=="
-  "resolved" "https://registry.npmjs.org/@types/react-dom/-/react-dom-18.2.19.tgz"
-  "version" "18.2.19"
+  version "18.2.19"
+  resolved "https://registry.npmjs.org/@types/react-dom/-/react-dom-18.2.19.tgz"
+  integrity sha512-aZvQL6uUbIJpjZk4U8JZGbau9KDeAwMfmhyWorxgBkqDIEf6ROjRozcmPIicqsUwPUjbkDfHKgGee1Lq65APcA==
   dependencies:
     "@types/react" "*"
 
 "@types/react@*", "@types/react@^18.2.55":
-  "integrity" "sha512-Y2Tz5P4yz23brwm2d7jNon39qoAtMMmalOQv6+fEFt1mT+FcM3D841wDpoUvFXhaYenuROCy3FZYqdTjM7qVyA=="
-  "resolved" "https://registry.npmjs.org/@types/react/-/react-18.2.55.tgz"
-  "version" "18.2.55"
+  version "18.2.55"
+  resolved "https://registry.npmjs.org/@types/react/-/react-18.2.55.tgz"
+  integrity sha512-Y2Tz5P4yz23brwm2d7jNon39qoAtMMmalOQv6+fEFt1mT+FcM3D841wDpoUvFXhaYenuROCy3FZYqdTjM7qVyA==
   dependencies:
     "@types/prop-types" "*"
     "@types/scheduler" "*"
-    "csstype" "^3.0.2"
+    csstype "^3.0.2"
 
 "@types/scheduler@*":
-  "integrity" "sha512-WZLiwShhwLRmeV6zH+GkbOFT6Z6VklCItrDioxUnv+u4Ll+8vKeFySoFyK/0ctcRpOmwAicELfmys1sDc/Rw+A=="
-  "resolved" "https://registry.npmjs.org/@types/scheduler/-/scheduler-0.16.8.tgz"
-  "version" "0.16.8"
+  version "0.16.8"
+  resolved "https://registry.npmjs.org/@types/scheduler/-/scheduler-0.16.8.tgz"
+  integrity sha512-WZLiwShhwLRmeV6zH+GkbOFT6Z6VklCItrDioxUnv+u4Ll+8vKeFySoFyK/0ctcRpOmwAicELfmys1sDc/Rw+A==
 
-"csstype@^3.0.2":
-  "integrity" "sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw=="
-  "resolved" "https://registry.npmjs.org/csstype/-/csstype-3.1.3.tgz"
-  "version" "3.1.3"
+csstype@^3.0.2:
+  version "3.1.3"
+  resolved "https://registry.npmjs.org/csstype/-/csstype-3.1.3.tgz"
+  integrity sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw==
 
-"frame-link@^0.0.5":
-  "integrity" "sha512-iMIbJuLFx93P8PYCswkpBfCzBjmnMVu5R9+/PUIBI6HSY105hPPFNFiQlJRmZy0sdVlLjw3cI8l0vBYo2dcSsA=="
-  "resolved" "https://registry.npmjs.org/frame-link/-/frame-link-0.0.5.tgz"
-  "version" "0.0.5"
+frame-link@^0.0.5:
+  version "0.0.5"
+  resolved "https://registry.npmjs.org/frame-link/-/frame-link-0.0.5.tgz"
+  integrity sha512-iMIbJuLFx93P8PYCswkpBfCzBjmnMVu5R9+/PUIBI6HSY105hPPFNFiQlJRmZy0sdVlLjw3cI8l0vBYo2dcSsA==
 
-"hamt_plus@1.0.2":
-  "integrity" "sha512-t2JXKaehnMb9paaYA7J0BX8QQAY8lwfQ9Gjf4pg/mk4krt+cmwmU652HOoWonf+7+EQV97ARPMhhVgU1ra2GhA=="
-  "resolved" "https://registry.npmjs.org/hamt_plus/-/hamt_plus-1.0.2.tgz"
-  "version" "1.0.2"
+hamt_plus@1.0.2:
+  version "1.0.2"
+  resolved "https://registry.npmjs.org/hamt_plus/-/hamt_plus-1.0.2.tgz"
+  integrity sha512-t2JXKaehnMb9paaYA7J0BX8QQAY8lwfQ9Gjf4pg/mk4krt+cmwmU652HOoWonf+7+EQV97ARPMhhVgU1ra2GhA==
 
-"immer@>=10.0.0":
-  "integrity" "sha512-pwupu3eWfouuaowscykeckFmVTpqbzW+rXFCX8rQLkZzM9ftBmU/++Ra+o+L27mz03zJTlyV4UUr+fdKNffo4A=="
-  "resolved" "https://registry.npmjs.org/immer/-/immer-10.0.3.tgz"
-  "version" "10.0.3"
-
-"js-tokens@^3.0.0 || ^4.0.0":
-  "integrity" "sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ=="
-  "resolved" "https://registry.npmjs.org/js-tokens/-/js-tokens-4.0.0.tgz"
-  "version" "4.0.0"
-
-"loose-envify@^1.1.0":
-  "integrity" "sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q=="
-  "resolved" "https://registry.npmjs.org/loose-envify/-/loose-envify-1.4.0.tgz"
-  "version" "1.4.0"
+recoil@^0.7.7:
+  version "0.7.7"
+  resolved "https://registry.npmjs.org/recoil/-/recoil-0.7.7.tgz"
+  integrity sha512-8Og5KPQW9LwC577Vc7Ug2P0vQshkv1y3zG3tSSkWMqkWSwHmE+by06L8JtnGocjW6gcCvfwB3YtrJG6/tWivNQ==
   dependencies:
-    "js-tokens" "^3.0.0 || ^4.0.0"
+    hamt_plus "1.0.2"
 
-"react-dom@>=16.3.0":
-  "integrity" "sha512-6IMTriUmvsjHUjNtEDudZfuDQUoWXVxKHhlEGSk81n4YFS+r/Kl99wXiwlVXtPBtJenozv2P+hxDsw9eA7Xo6g=="
-  "resolved" "https://registry.npmjs.org/react-dom/-/react-dom-18.2.0.tgz"
-  "version" "18.2.0"
-  dependencies:
-    "loose-envify" "^1.1.0"
-    "scheduler" "^0.23.0"
-
-"react@^18.2.0", "react@>=16.13.1", "react@>=16.3.0", "react@>=16.8.3":
-  "integrity" "sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ=="
-  "resolved" "https://registry.npmjs.org/react/-/react-18.2.0.tgz"
-  "version" "18.2.0"
-  dependencies:
-    "loose-envify" "^1.1.0"
-
-"recoil@^0.7.7":
-  "integrity" "sha512-8Og5KPQW9LwC577Vc7Ug2P0vQshkv1y3zG3tSSkWMqkWSwHmE+by06L8JtnGocjW6gcCvfwB3YtrJG6/tWivNQ=="
-  "resolved" "https://registry.npmjs.org/recoil/-/recoil-0.7.7.tgz"
-  "version" "0.7.7"
-  dependencies:
-    "hamt_plus" "1.0.2"
-
-"scheduler@^0.23.0":
-  "integrity" "sha512-CtuThmgHNg7zIZWAXi3AsyIzA3n4xx7aNyjwC2VJldO2LMVDhFK+63xGqq6CsJH4rTAt6/M+N4GhZiDYPx9eUw=="
-  "resolved" "https://registry.npmjs.org/scheduler/-/scheduler-0.23.0.tgz"
-  "version" "0.23.0"
-  dependencies:
-    "loose-envify" "^1.1.0"
-
-"state-pool@^0.10.1":
-  "integrity" "sha512-eSp18jxKrKeXjf1Hm1qjwN14CWoxUNuUjqEUuK9QP/dsDXqd/JZ+i32RIRvTjgsim+sq0SKSschueIVLEcnMZA=="
-  "resolved" "https://registry.npmjs.org/state-pool/-/state-pool-0.10.1.tgz"
-  "version" "0.10.1"
-  dependencies:
-    "immer" ">=10.0.0"
-
-"typescript@^5.3.3":
-  "integrity" "sha512-pXWcraxM0uxAS+tN0AG/BF2TyqmHO014Z070UsJ+pFvYuRSq8KH8DmWpnbXe0pEPDHXZV3FcAbJkijJ5oNEnWw=="
-  "resolved" "https://registry.npmjs.org/typescript/-/typescript-5.3.3.tgz"
-  "version" "5.3.3"
+typescript@^5.3.3:
+  version "5.3.3"
+  resolved "https://registry.npmjs.org/typescript/-/typescript-5.3.3.tgz"
+  integrity sha512-pXWcraxM0uxAS+tN0AG/BF2TyqmHO014Z070UsJ+pFvYuRSq8KH8DmWpnbXe0pEPDHXZV3FcAbJkijJ5oNEnWw==

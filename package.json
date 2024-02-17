@@ -1,6 +1,6 @@
 {
   "name": "frame-link-react",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Async postMessage provider for communicating with iframe",
   "main": "dist/FrameLinkProvider.js",
   "repository": {
@@ -23,7 +23,6 @@
   },
   "dependencies": {
     "frame-link": "^0.0.5",
-    "recoil": "^0.7.7",
-    "state-pool": "^0.10.1"
+    "recoil": "^0.7.7"
   }
 }

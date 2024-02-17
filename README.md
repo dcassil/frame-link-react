@@ -22,6 +22,7 @@ frame-link-react ( this one ): uses React's context api along with react recoil 
 yarn: yarn add frame-link-react
 npm: npm i frame-link-react
 ## To use
+See [Examples](https://github.com/dcassil/frame-link-react/tree/main/examples)
 ### On Parent
 Wrap everything with the provider.  This is often done in app.tsx / app.js
 ```
@@ -38,7 +39,6 @@ export default function App() {
 ### Then in MyOtherComponent
 #### Use the FrameLinkContext to register the target frame.
 
-See [Examples](https://github.com/dcassil/frame-link-react/tree/main/examples)
 ```
 import {FrameLinkContext} from 'frame-link-react';
 
