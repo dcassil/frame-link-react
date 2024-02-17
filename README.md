@@ -1,141 +1,113 @@
-## Frame Link ( frame-link-react ) - (unstable version)
+
+## Frame Link ( frame-link-react )
+
+  
 
 Frame Link is a lightweight library that makes two way async communication, between a parent site and iframe, easy.
 
-# notes.
+  
 
-There will be breaking changes until v1.0.0 so just know that.
-I think I am going to add state management in the provider to kepp track of listner data so you do not have to implement that on your own.
-
-# !! You have to install the package on both the parent and frame.
-
-You can mix and match frame-link and frame-link-react ( one on iFrame and one on Parent )
-
-## Vanilla version
-
-Not using React? try out frame-link
+## To use frame-link / frame-link-react
+You need to have access to both the parent frame codebase and the target iframe.
+Some version of frame-link must be installed in both.
+  
+## You can mix and match
+frame-link: is the vanilla version "yarn add frame-link" see
+frame-link-react ( this one ): uses React's context api along with react recoil to perform selective re-renders
 
 ## Getting started
 
 ### To install
 
-yarn add frame-link
-
-### or
-
-npm i frame-link
-
+yarn: yarn add frame-link-react
+npm: npm i frame-link-react
 ## To use
-
 ### On Parent
-
+Wrap everything with the provider.  This is often done in app.tsx / app.js
 ```
 import FrameLinkProvider from 'frame-link-react';
 
 export default function App() {
-    return (
-        <FrameLinkProvider>
-            <MyOtherComponent/>
-        </FrameLinkProvider>
-    )
+	return (
+		<FrameLinkProvider>
+			<MyOtherComponent/>
+		</FrameLinkProvider>
+	)
 }
 ```
-
-## Then in MyOtherComponent
-
+### Then in MyOtherComponent
+#### Use the FrameLinkContext to register the target frame.
 ```
 import {FrameLinkContext} from 'frame-link-react';
 
 export default function MyOtherComponent() {
-    const frameRef = useRef();
-    const {ready, registerTarget, postMessage} = useContext(FrameLinkContext)
+	const frameRef = useRef();
+	const {ready, connected, registerTarget, postMessage} = useContext(FrameLinkContext)
 
-    useEffect(() => {
-        frameLink.postMessage('my-event', {some: 'data'}, (respDataFromIframe) => {
-            console.log('response from iFrame', respDataFromIframe)
-        })
-    }, [ready])
+	useEffect(() => {
+		if (connected) {
+			frameLink.postMessage('my-event', {some: 'data'}, (respDataFromIframe) => {
+			// this callback is optional and is used for two way async com between frames.
+			console.log('response from iFrame', respDataFromIframe)
+		})
+		}
+	}, [connected])
 
-    useEffect(() => {
-        if (!!frameRef) {
-            registerTarget(frameRef)
-        }
+	useEffect(() => {
+		if (!!frameRef && ready) {
+			registerTarget(frameRef)
+		}
+	}, [frameRef, ready])
 
-    }, [frameRef])
-
-    return (
-        <div >
-            <iframe ref={frameRef} />
-        </div>
-    )
+	return (
+		<div >
+			<iframe ref={frameRef} />
+		</div>
+	)
 }
-```
 
+```
 ### On iFrame
-
 ```
 import FrameLinkProvider from 'frame-link-react';
 
 export default function App() {
-    return (
-        <FrameLinkProvider>
-            <MyOtherComponent/>
-        </FrameLinkProvider>
-    )
+	return (
+		<FrameLinkProvider>
+			<MyOtherComponent/>
+		</FrameLinkProvider>
+	)
 }
-```
 
 ```
-
+```
 import {FrameLinkContext} from 'frame-link-react';
 
 export default function MyOtherComponent() {
-    const {ready, registerTarget, postMessage} = useContext(FrameLinkContext)
+	const {useSubscribe, useAddListener, ready, connected} = useContext(FrameLinkContext)
+	// This needs to be done once
+	useAddListener('one'); 
+	// Afterwards you can subscribe to the key in any component with
+	// TODO: I will probably change this so that subscribe calls addListener if it has not been done.  No need for the extra step.
+	const myListenerOne = useSubscribe('one');
 
-    useEffect(() => {
-        frameLink.addListener('my-event', (data, callback) => {
-            // Here is the helpful bit.
-            // it is optional.
-            callback && callback({something: 'whatever data I want to send back to parent'})
-        })
-    }, [ready])
+	useEffect(() => {
+		console.log('a connection with the parent/iframe has been made')
+	}, [connected])
+  
+	useEffect(() => {
+		registerTarget(window.parent)
+	}, [ready])
 
-    useEffect(() => {
-        registerTarget(window.parent)
-    }, [])
-
-    return (
-        <div >
-           ...
-        </div>
-    )
+	useEffect(() => {
+		// any time myListenerOne is updated by the parent/iframe this component will re-render and this hook will run.
+		console.log('myListenerOne updated', myListenerOne)
+	}, [myListenerOne])
+  
+	return (
+		<div >
+			{myListenerOne.message}
+		</div>
+	)
 }
-```
-
-## Callbacks are not required, and you can setup one way listners and senders if that better suits your needs.
-
-### iFrame
-
-```
-frameLink.addListener('my-event-from-parent', (data) => {
-    console.log('do something with data', data);
-})
-
-frameLink.postMessage('my-event-from-child', {some: 'data'})
-```
-
-### Parent
-
-```
-frameLink.addListener('my-event-from-child', (data) => {
-    console.log('do something with data', data);
-})
-
-frameLink.postMessage('my-event-from-[arent]', {some: 'data'})
-```
-
-## But.... why.
-
-```
-
 ```
