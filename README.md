@@ -37,6 +37,8 @@ export default function App() {
 ```
 ### Then in MyOtherComponent
 #### Use the FrameLinkContext to register the target frame.
+
+See [Examples](https://github.com/dcassil/frame-link-react/tree/main/examples)
 ```
 import {FrameLinkContext} from 'frame-link-react';
 
