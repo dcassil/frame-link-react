@@ -47,9 +47,9 @@ export default function MyOtherComponent() {
 	useEffect(() => {
 		if (connected) {
 			frameLink.postMessage('my-event', {some: 'data'}, (respDataFromIframe) => {
-			// this callback is optional and is used for two way async com between frames.
-			console.log('response from iFrame', respDataFromIframe)
-		})
+                // this callback is optional and is used for two way async com between frames.
+                console.log('response from iFrame', respDataFromIframe)
+		    })
 		}
 	}, [connected])
 
