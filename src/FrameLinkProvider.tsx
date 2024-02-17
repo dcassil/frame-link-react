@@ -1,10 +1,15 @@
+import { createContext, ReactNode } from "react";
 import { RecoilRoot } from "recoil";
-import FrameLinkProviderInternal, {
-  FrameLinkContext as _FrameLinkContext,
-} from "./FrameLinkProviderInternal";
+import FrameLinkProviderInternal from "./FrameLinkProviderInternal";
+import FrameLinkReact from "./types";
 
-export const FrameLinkContext = _FrameLinkContext;
-export default function FrameLinkProvider({ children }: any) {
+export const FrameLinkContext = createContext({} as FrameLinkReact.Context);
+
+export default function FrameLinkProvider({
+  children,
+}: {
+  children: ReactNode;
+}) {
   return (
     <RecoilRoot>
       <FrameLinkProviderInternal>{children}</FrameLinkProviderInternal>

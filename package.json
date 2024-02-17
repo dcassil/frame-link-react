@@ -1,9 +1,8 @@
 {
   "name": "frame-link-react",
-  "version": "0.0.19",
+  "version": "0.0.12",
   "description": "Async postMessage provider for communicating with iframe",
   "main": "dist/FrameLinkProvider.js",
-  "types": "dist/FrameLinkProvider.d.ts",
   "scripts": {
     "build": "tsc"
   },

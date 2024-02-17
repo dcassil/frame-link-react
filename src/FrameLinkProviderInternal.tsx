@@ -1,73 +1,89 @@
-import FrameLink, {
-  TFrameLink,
-  TPostMessage,
-  TRegisterTarget,
-  TRemoveListener,
-} from "frame-link";
-import { createContext, useEffect, useRef, useState } from "react";
-import { atom, useSetRecoilState, useRecoilValue, RecoilState } from "recoil";
+// FrameLinkProvider.tsx
+import { useEffect, useRef, useState } from "react";
+import { atom, useSetRecoilState, useRecoilValue } from "recoil";
+import FrameLink, { TFrameLink } from "frame-link";
+import FrameLinkReact from "./types";
+import { FrameLinkContext } from "./FrameLinkProvider";
 
-const atoms: Record<any, any> = {};
+/**
+ * Initializes a record of Recoil atoms.
+ */
+const listeners: Record<
+  FrameLinkReact.ListenerKey,
+  FrameLinkReact.Listener<any>
+> = {};
 
-const createAtom = (key: any): RecoilState<any> => {
-  let _atom = atom({
-    key: key,
-    default: {},
+/**
+ * Creates and adds a listener to the store.
+ * @param key - The key to listen to.
+ * @returns The newly created listeners.
+ */
+function createListener<T>(
+  key: FrameLinkReact.ListenerKey
+): FrameLinkReact.Listener<T> {
+  listeners[key] = atom<FrameLinkReact.ListenerValue<T, any>>({
+    key: String(key),
+    default: {} as any,
   });
 
-  atoms[key] = _atom;
+  return listeners[key] as FrameLinkReact.Listener<T>;
+}
 
-  return atoms[key];
-};
-
-const useNotify = (key: any) => {
-  let _atom = atoms[key] || createAtom(key);
-  let updater = useSetRecoilState(_atom);
-
-  return (data: any) => updater((previous: any) => ({ ...previous, ...data }));
-};
-
-const _useSubscribe = (key: any) => {
-  let _atom = atoms[key] || createAtom(key);
-
-  return useRecoilValue(_atom);
-};
-
-const _unSubscribe = (key: any) => {
-  if (atoms[key]) {
-    delete atoms[key];
-  }
-};
-
-export type TFrameLinkProvider = {
-  useAddListener: (key: any) => void;
-  useSubscribe: (key: any) => any;
-  unSubscribe: (key: any) => any;
-  usePostMessage: (
-    key: any
-  ) => (data: any, callback: (data: any) => void) => void;
-  postMessage: TPostMessage;
-  removeListener: TRemoveListener;
-  registerTarget: TRegisterTarget | undefined;
-  ready: boolean;
-  connected: boolean;
-};
-export const FrameLinkContext = createContext({} as TFrameLinkProvider);
-
-export default function FrameLinkProviderInternal({ children }: any) {
-  const [ready, setReady] = useState(false);
-  const [connected, setConnected] = useState(false);
-  const frameLink = useRef<TFrameLink | undefined>(
-    FrameLink((connected) => {
-      setConnected(connected);
-    })
+/**
+ * Returns an updater function for a given key.
+ * @param key - The key to notify on.
+ * @returns Function to notify a given key with a payload.
+ */
+function useNotify<T>(key: FrameLinkReact.ListenerKey) {
+  const updater = useSetRecoilState<T>(
+    listeners[key] || createListener<T>(key)
   );
 
-  const usePostMessage = (key: any) => {
+  return (data: T) => updater((previous: T) => ({ ...previous, ...data } as T));
+}
+
+/**
+ * Subscribe to a given key, any time a new value is sent the component will re-render.
+ * @param key - The key to identify the Recoil state.
+ * @returns payload sent via useNotify.
+ */
+function useSubscribe<T>(key: FrameLinkReact.ListenerKey): T {
+  return useRecoilValue<T>(listeners[key] || createListener<T>(key));
+}
+
+/**
+ * Unsubscribes a listener.
+ * @param key - The key to identify the Listener.
+ */
+function unSubscribe(key: FrameLinkReact.ListenerKey): void {
+  if (listeners[key]) {
+    delete listeners[key];
+  }
+}
+
+/**
+ * FrameLinkProvider component.
+ */
+const FrameLinkProvider: FrameLinkReact.Provider = ({
+  children,
+}: FrameLinkReact.ProviderProps) => {
+  const [ready, setReady] = useState<boolean>(false);
+  const [connected, setConnected] = useState<boolean>(false);
+  const frameLink = useRef<TFrameLink>();
+
+  // Initialize FrameLink connection
+  useEffect(() => {
+    frameLink.current = FrameLink((connected) => {
+      setConnected(connected);
+    });
+  }, []);
+
+  // Custom hook to post messages via FrameLink
+  function usePostMessage<T>(key: string) {
     const notify = useNotify(key);
 
-    return (data: any, callback: (data: any) => void) => {
-      frameLink.current?.postMessage(key, data, (data: any) => {
+    return (data: T, callback: (data: T) => void) => {
+      frameLink.current?.postMessage(key, data, (data: T) => {
         notify(data);
 
         if (callback) {
@@ -75,51 +91,46 @@ export default function FrameLinkProviderInternal({ children }: any) {
         }
       });
     };
-  };
+  }
 
-  const useAddListener = (key: string) => {
-    const notify = useNotify(key);
+  // Custom hook to add listener for a specific key
+  function useAddListener<T>(key: string) {
+    const notify = useNotify<T>(key);
 
-    if (frameLink?.current) {
-      frameLink.current.addListener(key, (data: any) => {
-        console.log("state tore update", key);
+    useEffect(() => {
+      const listener = (data: T) => {
         notify(data);
-      });
-    } else {
-      window.setTimeout(() => {
-        frameLink.current?.addListener(key, (data: any) => {
-          console.log("state tore update", key);
-          notify(data);
-        });
-      }, 100);
-      // throw new Error("attempted to call framelink before it was ready");
-    }
+      };
+
+      // Delay listener registration to allow frameLink to setup
+      const delay = frameLink?.current ? 0 : 100;
+      const timeout = window.setTimeout(() => {
+        frameLink.current?.addListener(key, listener);
+      }, delay);
+
+      return () => clearTimeout(timeout);
+    }, [key, notify]);
+  }
+
+  // Remove listener for a specific key
+  const removeListener = (key: FrameLinkReact.ListenerKey) => {
+    unSubscribe(key);
+    frameLink.current?.removeListener({ key: String(key) });
   };
 
-  const removeListener = (key: any) => {
-    _unSubscribe(key);
-    frameLink.current?.removeListener(key);
-  };
-
-  const useSubscribe = (key: any) => {
-    return _useSubscribe(key);
-  };
-
-  const unSubscribe = (key: any) => {
-    _unSubscribe(key);
-  };
-
+  // Set ready state after initialization
   useEffect(() => {
     setReady(true);
   }, []);
 
+  // Provide FrameLink context to children components
   return (
     <FrameLinkContext.Provider
       value={{
         useSubscribe,
         useAddListener,
         usePostMessage,
-        postMessage,
+        postMessage: frameLink.current?.postMessage!,
         unSubscribe,
         registerTarget: frameLink.current?.registerTarget,
         removeListener,
@@ -130,4 +141,6 @@ export default function FrameLinkProviderInternal({ children }: any) {
       {children}
     </FrameLinkContext.Provider>
   );
-}
+};
+
+export default FrameLinkProvider;
