@@ -1,1 +1,1 @@
-{"version":3,"file":"FrameLinkProviderInternal.d.ts","sourceRoot":"","sources":["../src/FrameLinkProviderInternal.tsx"],"names":[],"mappings":"AAIA,OAAO,cAAc,MAAM,SAAS,CAAC;AA2DrC;;GAEG;AACH,QAAA,MAAM,iBAAiB,EAAE,cAAc,CAAC,QA6EvC,CAAC;AAEF,eAAe,iBAAiB,CAAC"}
+{"version":3,"file":"FrameLinkProviderInternal.d.ts","sourceRoot":"","sources":["../src/FrameLinkProviderInternal.tsx"],"names":[],"mappings":"AAIA,OAAO,cAAc,MAAM,SAAS,CAAC;AA0FrC;;;;GAIG;AACH,QAAA,MAAM,iBAAiB,EAAE,cAAc,CAAC,QA0FvC,CAAC;AAEF,eAAe,iBAAiB,CAAC"}

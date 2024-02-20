@@ -1,0 +1,4 @@
+src
+*.tgz
+yarn-error.log
+dist/tests

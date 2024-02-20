@@ -14,15 +14,16 @@ export default function App() {
 
 function MyComponent() {
   const { registerTarget, ready, connected } = useContext(FrameLinkContext);
-  const frameRef = useRef<any>();
 
   useEffect(() => {
     if (ready && registerTarget) {
+      // Register the target ( in this case the parent )
       registerTarget(window.parent);
     }
   }, [ready]);
 
   useEffect(() => {
+    // Wait for them to connect ( sends a ping and gets a reply ping )
     console.log("connected", connected);
   }, [connected]);
 
@@ -31,13 +32,17 @@ function MyComponent() {
 
 function MyButtonComponent() {
   const { usePostMessage } = useContext(FrameLinkContext);
+  // create an updater for a given key;
   const updateTestTwo = usePostMessage("test-two");
 
   return (
     <button
       onClick={() =>
-        updateTestTwo({ myPayload: "this is a test-two test" }, () => {
-          // Optional callback... well it is supposed to be.  I need to fix the type
+        // Call the updater with the data to send to the other frame.
+        updateTestTwo({ myPayload: "this is a test-two test" }, (replyData) => {
+          // Optional callback... See subscribe
+          // If a reply callback is included, when this is received on the parent, we will send a response back
+          // If the parent includes a reply callback when subscribing, replyData will be whatever that callback returns.
         })
       }
     >
@@ -46,11 +51,17 @@ function MyButtonComponent() {
   );
 }
 
+const optionalReplyFunction = (latestData) => {
+  return { anything: "you want" }; //
+};
+
 function MyNotificationComponent() {
-  const { useAddListener, useSubscribe } = useContext(FrameLinkContext);
-  useAddListener("test");
-  const test = useSubscribe<{ myPayload: string }>("test");
+  const { useSubscribe } = useContext(FrameLinkContext);
+  const test = useSubscribe<{ myPayload: string }>(
+    "test",
+    optionalReplyFunction
+  );
 
   // This will update whenever "test-two" gets new data.
-  return <div>{test.myPayload}</div>;
+  return <div>{test?.myPayload}</div>;
 }

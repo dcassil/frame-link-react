@@ -22,12 +22,14 @@ declare namespace FrameLinkReact {
    * Defines the structure of the FrameLink provider.
    */
   interface Context {
-    useAddListener: (key: string) => void;
-    useSubscribe: <T>(key: string) => T;
+    useSubscribe: <T = any, K = any>(
+      key: string,
+      reply?: (latestData: T) => K
+    ) => T;
     unSubscribe: (key: string) => void;
     usePostMessage: (
       key: string
-    ) => (data: any, callback: (data: any) => void) => void;
+    ) => (data: any, callback?: (data: any) => void) => void;
     postMessage: TPostMessage;
     removeListener: (key: string) => void;
     registerTarget: TRegisterTarget | undefined;
@@ -37,6 +39,7 @@ declare namespace FrameLinkReact {
 
   interface ProviderProps {
     children: React.ReactNode;
+    targetOrigin?: string;
   }
 
   type Provider = ({ children }: ProviderProps) => JSX.Element;

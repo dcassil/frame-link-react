@@ -14,19 +14,62 @@ const listeners: Record<
 > = {};
 
 /**
- * Creates and adds a listener to the store.
+ * Creates and adds a listener to the store if it does not exist.
  * @param key - The key to listen to.
  * @returns The newly created listeners.
  */
-function createListener<T>(
+function createListenerIfNotExists<T>(
   key: FrameLinkReact.ListenerKey
 ): FrameLinkReact.Listener<T> {
-  listeners[key] = atom<FrameLinkReact.ListenerValue<T, any>>({
-    key: String(key),
-    default: {} as any,
-  });
+  if (doesListenerExist(key)) return getListener(key);
 
+  setListener(
+    key,
+    atom<FrameLinkReact.ListenerValue<T, any>>({
+      key: String(key),
+      default: {} as FrameLinkReact.Listener<T>,
+    })
+  );
+
+  return getListener(key);
+}
+
+/**
+ * Delete listenr if it exists.
+ * @param key - The key to listen to.
+ * @returns void.
+ */
+function deleteListenerIfExists<T>(key: FrameLinkReact.ListenerKey): void {
+  if (doesListenerExist(key)) delete listeners[key];
+}
+
+/**
+ * Get listenr if it exists.
+ * @param key - The key to listen to.
+ * @returns The listener.
+ */
+function getListener<T>(key: FrameLinkReact.ListenerKey) {
   return listeners[key] as FrameLinkReact.Listener<T>;
+}
+
+/**
+ * Set listenr.
+ * @param key - The key to listen to.
+ * @returns void.
+ */
+function setListener<T>(
+  key: FrameLinkReact.ListenerKey,
+  listener: FrameLinkReact.Listener<T>
+) {
+  listeners[key] = listener;
+}
+
+/**
+ * Check if listener has already been added.
+ * @param key - The key to identify the Listener.
+ */
+function doesListenerExist(key: FrameLinkReact.ListenerKey): boolean {
+  return !!listeners[key];
 }
 
 /**
@@ -35,37 +78,28 @@ function createListener<T>(
  * @returns Function to notify a given key with a payload.
  */
 function useNotify<T>(key: FrameLinkReact.ListenerKey) {
-  const updater = useSetRecoilState<T>(
-    listeners[key] || createListener<T>(key)
-  );
+  const listener = createListenerIfNotExists<T>(key);
+  const updater = useSetRecoilState<T>(listener);
 
   return (data: T) => updater((previous: T) => ({ ...previous, ...data } as T));
 }
 
 /**
- * Subscribe to a given key, any time a new value is sent the component will re-render.
- * @param key - The key to identify the Recoil state.
- * @returns payload sent via useNotify.
- */
-function useSubscribe<T>(key: FrameLinkReact.ListenerKey): T {
-  return useRecoilValue<T>(listeners[key] || createListener<T>(key));
-}
-
-/**
- * Unsubscribes a listener.
+ * Unsubscribes a listener if it exists.
  * @param key - The key to identify the Listener.
  */
 function unSubscribe(key: FrameLinkReact.ListenerKey): void {
-  if (listeners[key]) {
-    delete listeners[key];
-  }
+  deleteListenerIfExists(key);
 }
 
 /**
  * FrameLinkProvider component.
+ * @param children - ReactNode
+ * @param origin - allowed origin of other frame.  Default: '*'
  */
 const FrameLinkProvider: FrameLinkReact.Provider = ({
   children,
+  targetOrigin,
 }: FrameLinkReact.ProviderProps) => {
   const [ready, setReady] = useState<boolean>(false);
   const [connected, setConnected] = useState<boolean>(false);
@@ -73,19 +107,23 @@ const FrameLinkProvider: FrameLinkReact.Provider = ({
 
   // Initialize FrameLink connection
   useEffect(() => {
-    frameLink.current = FrameLink((connected) => {
-      setConnected(connected);
-    });
+    frameLink.current = FrameLink(
+      () => {
+        setConnected(true);
+      },
+      { targetOrigin: targetOrigin }
+    );
   }, []);
 
-  // Custom hook to post messages via FrameLink
+  /**
+   * Send a message to the other frame ( parent or iframe ).
+   * @param key - The key to identify the Listener.
+   * @returns A notify function to call with data to send the other frame and an optional callback
+   * @returns (data: any, callback?: (response: any)) => void
+   */
   function usePostMessage<T>(key: string) {
-    const notify = useNotify(key);
-
-    return (data: T, callback: (data: T) => void) => {
+    return (data: T, callback?: (data: T) => void) => {
       frameLink.current?.postMessage(key, data, (data: T) => {
-        notify(data);
-
         if (callback) {
           callback(data);
         }
@@ -93,26 +131,35 @@ const FrameLinkProvider: FrameLinkReact.Provider = ({
     };
   }
 
-  // Custom hook to add listener for a specific key
-  function useAddListener<T>(key: string) {
+  /**
+   * Subscribe to a message from the other frame ( parent or iframe ).
+   * @param key - The key to identify the Listener.
+   * @param reply - Optional function that is passed the current value of the subscribed key
+   * - It should return an object
+   * - if usePostMessage / update was given a reply callback, it will be called with the data returned from the reply function
+   * - - const updateKey = usePostMessage('key')
+   * - - updateKey(data, (replyData) => {// get a reply back and do something with the data})
+   * @returns the most recent value sent by the other frame.
+   * @returns This will update and trigger a re-render when the value changes.
+   */
+  function useSubscribe<T, K = any>(key: string, reply?: (data: T) => K) {
     const notify = useNotify<T>(key);
+    const listener = (data: T) => {
+      notify(data);
+      return reply && reply(data);
+    };
 
-    useEffect(() => {
-      const listener = (data: T) => {
-        notify(data);
-      };
+    if (frameLink.current && !frameLink.current.hasListener({ key })) {
+      frameLink.current?.addListener(key, listener);
+    }
 
-      // Delay listener registration to allow frameLink to setup
-      const delay = frameLink?.current ? 0 : 100;
-      const timeout = window.setTimeout(() => {
-        frameLink.current?.addListener(key, listener);
-      }, delay);
-
-      return () => clearTimeout(timeout);
-    }, [key, notify]);
+    return useRecoilValue<T>(listeners[key]);
   }
 
-  // Remove listener for a specific key
+  /**
+   * Remove a listener, disables all subscibers for the given key.
+   * @param key - The key to identify the Listener.
+   */
   const removeListener = (key: FrameLinkReact.ListenerKey) => {
     unSubscribe(key);
     frameLink.current?.removeListener({ key: String(key) });
@@ -128,7 +175,6 @@ const FrameLinkProvider: FrameLinkReact.Provider = ({
     <FrameLinkContext.Provider
       value={{
         useSubscribe,
-        useAddListener,
         usePostMessage,
         postMessage: frameLink.current?.postMessage!,
         unSubscribe,

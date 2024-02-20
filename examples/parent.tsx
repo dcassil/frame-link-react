@@ -51,10 +51,9 @@ function MyButtonComponent() {
 }
 
 function MyNotificationComponent() {
-  const { useAddListener, useSubscribe } = useContext(FrameLinkContext);
-  useAddListener("test-two"); // This will be removed in the near future.
-  const testTwo = useSubscribe<{ myPayload: string }>("test-two"); // this will do both.
+  const { useSubscribe } = useContext(FrameLinkContext);
+  const testTwo = useSubscribe<{ myPayload: string }>("test-two");
 
   // This will update whenever "test-two" gets new data.
-  return <div>{testTwo.myPayload}</div>;
+  return <div>{testTwo?.myPayload}</div>;
 }

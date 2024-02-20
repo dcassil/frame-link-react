@@ -14,16 +14,50 @@ const FrameLinkProvider_1 = require("./FrameLinkProvider");
  */
 const listeners = {};
 /**
- * Creates and adds a listener to the store.
+ * Creates and adds a listener to the store if it does not exist.
  * @param key - The key to listen to.
  * @returns The newly created listeners.
  */
-function createListener(key) {
-    listeners[key] = (0, recoil_1.atom)({
+function createListenerIfNotExists(key) {
+    if (doesListenerExist(key))
+        return getListener(key);
+    setListener(key, (0, recoil_1.atom)({
         key: String(key),
         default: {},
-    });
+    }));
+    return getListener(key);
+}
+/**
+ * Delete listenr if it exists.
+ * @param key - The key to listen to.
+ * @returns void.
+ */
+function deleteListenerIfExists(key) {
+    if (doesListenerExist(key))
+        delete listeners[key];
+}
+/**
+ * Get listenr if it exists.
+ * @param key - The key to listen to.
+ * @returns The listener.
+ */
+function getListener(key) {
     return listeners[key];
+}
+/**
+ * Set listenr.
+ * @param key - The key to listen to.
+ * @returns void.
+ */
+function setListener(key, listener) {
+    listeners[key] = listener;
+}
+/**
+ * Check if listener has already been added.
+ * @param key - The key to identify the Listener.
+ */
+function doesListenerExist(key) {
+    return !!listeners[key];
 }
 /**
  * Returns an updater function for a given key.
@@ -31,70 +65,76 @@ function createListener(key) {
  * @returns Function to notify a given key with a payload.
  */
 function useNotify(key) {
-    const updater = (0, recoil_1.useSetRecoilState)(listeners[key] || createListener(key));
+    const listener = createListenerIfNotExists(key);
+    const updater = (0, recoil_1.useSetRecoilState)(listener);
     return (data) => updater((previous) => (Object.assign(Object.assign({}, previous), data)));
 }
 /**
- * Subscribe to a given key, any time a new value is sent the component will re-render.
- * @param key - The key to identify the Recoil state.
- * @returns payload sent via useNotify.
- */
-function useSubscribe(key) {
-    return (0, recoil_1.useRecoilValue)(listeners[key] || createListener(key));
-}
-/**
- * Unsubscribes a listener.
+ * Unsubscribes a listener if it exists.
  * @param key - The key to identify the Listener.
  */
 function unSubscribe(key) {
-    if (listeners[key]) {
-        delete listeners[key];
-    }
+    deleteListenerIfExists(key);
 }
 /**
  * FrameLinkProvider component.
+ * @param children - ReactNode
+ * @param origin - allowed origin of other frame.  Default: '*'
  */
-const FrameLinkProvider = ({ children, }) => {
+const FrameLinkProvider = ({ children, targetOrigin, }) => {
     var _a, _b;
     const [ready, setReady] = (0, react_1.useState)(false);
     const [connected, setConnected] = (0, react_1.useState)(false);
     const frameLink = (0, react_1.useRef)();
     // Initialize FrameLink connection
     (0, react_1.useEffect)(() => {
-        frameLink.current = (0, frame_link_1.default)((connected) => {
-            setConnected(connected);
-        });
+        frameLink.current = (0, frame_link_1.default)(() => {
+            setConnected(true);
+        }, { targetOrigin: targetOrigin });
     }, []);
-    // Custom hook to post messages via FrameLink
+    /**
+     * Send a message to the other frame ( parent or iframe ).
+     * @param key - The key to identify the Listener.
+     * @returns A notify function to call with data to send the other frame and an optional callback
+     * @returns (data: any, callback?: (response: any)) => void
+     */
     function usePostMessage(key) {
-        const notify = useNotify(key);
         return (data, callback) => {
             var _a;
             (_a = frameLink.current) === null || _a === void 0 ? void 0 : _a.postMessage(key, data, (data) => {
-                notify(data);
                 if (callback) {
                     callback(data);
                 }
             });
         };
     }
-    // Custom hook to add listener for a specific key
-    function useAddListener(key) {
+    /**
+     * Subscribe to a message from the other frame ( parent or iframe ).
+     * @param key - The key to identify the Listener.
+     * @param reply - Optional function that is passed the current value of the subscribed key
+     * - It should return an object
+     * - if usePostMessage / update was given a reply callback, it will be called with the data returned from the reply function
+     * - - const updateKey = usePostMessage('key')
+     * - - updateKey(data, (replyData) => {// get a reply back and do something with the data})
+     * @returns the most recent value sent by the other frame.
+     * @returns This will update and trigger a re-render when the value changes.
+     */
+    function useSubscribe(key, reply) {
+        var _a;
         const notify = useNotify(key);
-        (0, react_1.useEffect)(() => {
-            const listener = (data) => {
-                notify(data);
-            };
-            // Delay listener registration to allow frameLink to setup
-            const delay = (frameLink === null || frameLink === void 0 ? void 0 : frameLink.current) ? 0 : 100;
-            const timeout = window.setTimeout(() => {
-                var _a;
-                (_a = frameLink.current) === null || _a === void 0 ? void 0 : _a.addListener(key, listener);
-            }, delay);
-            return () => clearTimeout(timeout);
-        }, [key, notify]);
+        const listener = (data) => {
+            notify(data);
+            return reply && reply(data);
+        };
+        if (frameLink.current && !frameLink.current.hasListener({ key })) {
+            (_a = frameLink.current) === null || _a === void 0 ? void 0 : _a.addListener(key, listener);
+        }
+        return (0, recoil_1.useRecoilValue)(listeners[key]);
     }
-    // Remove listener for a specific key
+    /**
+     * Remove a listener, disables all subscibers for the given key.
+     * @param key - The key to identify the Listener.
+     */
     const removeListener = (key) => {
         var _a;
         unSubscribe(key);
@@ -107,7 +147,6 @@ const FrameLinkProvider = ({ children, }) => {
     // Provide FrameLink context to children components
     return ((0, jsx_runtime_1.jsx)(FrameLinkProvider_1.FrameLinkContext.Provider, { value: {
             useSubscribe,
-            useAddListener,
             usePostMessage,
             postMessage: (_a = frameLink.current) === null || _a === void 0 ? void 0 : _a.postMessage,
             unSubscribe,
