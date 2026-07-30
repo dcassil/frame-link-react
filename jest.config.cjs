@@ -13,13 +13,14 @@ module.exports = {
         module: 'CommonJS',
         moduleResolution: 'node',
         verbatimModuleSyntax: false,
+        importHelpers: false,
         jsx: 'react-jsx',
       },
     }],
   },
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
-    '^frame-link$': path.resolve(__dirname, '../frame-link/dist/index.js'),
+    '^frame-link$': path.resolve(__dirname, '../frame-link-ts/src/index.ts'),
   },
   setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.ts'],
   collectCoverageFrom: [

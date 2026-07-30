@@ -17,12 +17,14 @@ import { useFrameLinkContext } from "./useFrameLinkContext.js";
  * ```
  */
 export function useFrameLink<
-  TRegistry extends MessageRegistry
+  TRegistry extends MessageRegistry,
 >(): FrameLink<TRegistry> {
   const { frameLink } = useFrameLinkContext<TRegistry>();
 
   if (frameLink === null) {
-    throw new Error("FrameLink instance not initialized - this should not happen");
+    throw new Error(
+      "FrameLink instance not initialized - this should not happen",
+    );
   }
 
   return frameLink;

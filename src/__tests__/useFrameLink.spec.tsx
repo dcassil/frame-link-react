@@ -7,7 +7,9 @@ jest.mock("frame-link", () => ({
   createFrameLink: jest.fn(),
 }));
 
-const mockCreateFrameLink = createFrameLink as jest.MockedFunction<typeof createFrameLink>;
+const mockCreateFrameLink = createFrameLink as jest.MockedFunction<
+  typeof createFrameLink
+>;
 
 describe("useFrameLink", () => {
   const mockFrameLink = {
@@ -21,7 +23,7 @@ describe("useFrameLink", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockCreateFrameLink.mockReturnValue(mockFrameLink as any);
+    mockCreateFrameLink.mockReturnValue(mockFrameLink);
   });
 
   it("should throw when used outside provider", () => {
@@ -44,7 +46,7 @@ describe("useFrameLink", () => {
     });
 
     const firstInstance = result.current;
-    
+
     rerender();
 
     expect(result.current).toBe(firstInstance);

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "outDir": "../dist-examples"
+  },
+  "include": [
+    "sample-registry.ts",
+    "docs-snippets.ts",
+    "demo/**/*.ts",
+    "demo/**/*.tsx",
+    "vite.config.ts"
+  ],
+  "exclude": [
+    "../node_modules"
+  ]
+}

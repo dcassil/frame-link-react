@@ -42,7 +42,8 @@ export interface UseConnectionResult {
  * ```
  */
 export function useConnection(): UseConnectionResult {
-  const { connected, connecting, error, connect } = useFrameLinkContext<MessageRegistry>();
+  const { connected, connecting, error, connect } =
+    useFrameLinkContext<MessageRegistry>();
 
   return {
     connected,

@@ -9,6 +9,7 @@ import type { FrameLinkContextValue } from "./types.js";
  * MessageRegistry as the base type here. The actual type is enforced
  * at the provider and hook level.
  */
-export const FrameLinkContext = createContext<FrameLinkContextValue<MessageRegistry> | null>(null);
+export const FrameLinkContext =
+  createContext<FrameLinkContextValue<MessageRegistry> | null>(null);
 
 FrameLinkContext.displayName = "FrameLinkContext";

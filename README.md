@@ -1,236 +1,302 @@
-## Frame Link ( frame-link-react )
+# frame-link-react
 
-Frame Link is a lightweight library that makes two way async communication, between a parent site and iframe, easy.
+React bindings for [`frame-link`](../frame-link-ts/README.md) — type-safe, bidirectional parent↔iframe messaging via a Context provider and a set of focused hooks.
 
-## To use frame-link / frame-link-react
+This package wraps the core `frame-link` library in React context so components can send and handle messages without manually managing the `FrameLink` instance lifecycle.
 
-You need to have access to both the parent frame codebase and the target iframe.
+---
 
-Some version of frame-link must be installed in both.
+## Installation
 
-## You can mix and match
+`frame-link` is a **peer dependency** and must be installed alongside this package:
 
-frame-link: is the vanilla version "yarn add frame-link" see
+```bash
+npm install frame-link frame-link-react
+# or
+yarn add frame-link frame-link-react
+```
 
-frame-link-react ( this one ): uses React's context api along with react recoil to perform selective re-renders
+**Peer requirements:** React 18 or later.
 
-## Getting started
+---
 
-### To install
+## Provider setup
 
-yarn: yarn add frame-link-react
+Wrap the subtree that needs cross-frame messaging with `FrameLinkProvider`. The provider is generic over your message registry so all hooks inside it are fully typed.
 
-npm: npm i frame-link-react
+```tsx
+import { FrameLinkProvider } from "frame-link-react";
+import type { SampleMessages } from "./sample-registry";
 
-### The Basics
-
-#### Wrap your components in the provider
-
-    <FrameLinkProvider>
-        <MyComponent /> or {children}
+export default function App() {
+  return (
+    <FrameLinkProvider<SampleMessages>
+      options={{ targetOrigin: "https://your-iframe-origin.example.com" }}
+    >
+      <YourComponent />
     </FrameLinkProvider>
+  );
+}
+```
 
-#### Register Target
+### `FrameLinkProviderProps`
 
-    useEffect(() => {
+| Prop | Type | Description |
+|------|------|-------------|
+| `options` | `FrameLinkOptions` | Passed directly to `createFrameLink`. Must include `targetOrigin`. |
+| `children` | `ReactNode` | The subtree that can access the provider's hooks. |
 
-        registerTarget(window.parent)
-    }, [ready])
+The provider creates and owns a single `FrameLink` instance. It tears it down (`destroy()`) when `options` changes or the provider unmounts. You do not need to manage the instance manually.
 
-    useEffect(() => {
+---
 
-        registerTarget(iframeRef)
-    }, [ready])
+## Hooks reference
 
-#### Sending
+All hooks must be called inside a `FrameLinkProvider`. They infer types from the same `TRegistry` the provider was instantiated with.
 
-    const abcUpdater = usePostMessage('abc'); // Creates an updater for 'abc'
+### `useConnection()`
 
-    abcUpdater('hello world') // Sends 'hello world' to the other frame.
+Returns connection state and a `connect` function.
 
-#### Subscribing
+```ts
+function useConnection(): UseConnectionResult
+```
 
-    const abc = useSubscribe('abc'); // Subscribe to key 'abc' and update any time something is messaged to this key
+**`UseConnectionResult`**
 
-### More Detailed examples
+| Field | Type | Description |
+|-------|------|-------------|
+| `connect` | `(target: Window) => Promise<void>` | Initiate a connection to a target window (e.g. `iframe.contentWindow` or `window.parent`). |
+| `connected` | `boolean` | `true` once the handshake has completed. |
+| `connecting` | `boolean` | `true` while the handshake is in progress. |
+| `error` | `Error \| null` | Set if the most recent connection attempt failed. |
 
-See [Examples](https://github.com/dcassil/frame-link-react/tree/main/examples)
+```tsx
+const { connect, connected, connecting, error } = useConnection();
+```
 
-### On Parent
+### `useSend<TRegistry, TKey>(key)`
 
-#### Wrap everything with the provider. This is often done in app.tsx / app.js
+Returns a memoized, type-safe sender for the given message key.
 
-    import { useContext, useEffect, useRef } from "react"; 
-    import FrameLinkProvider, { FrameLinkContext } from "../src/FrameLinkProvider"; 
+```ts
+function useSend<
+  TRegistry extends MessageRegistry,
+  TKey extends keyof TRegistry & string,
+>(key: TKey): SendFunction<TRegistry, TKey>
+```
 
-    export default function App() {
-        return (
+`SendFunction<TRegistry, TKey>` has the shape:
 
-            <FrameLinkProvider>
-                <MyComponent />
-                <MyButtonComponent />
-                <MyNotificationComponent />
-            </FrameLinkProvider>
+```ts
+(payload: PayloadOf<TRegistry, TKey>) => Promise<ResponseOf<TRegistry, TKey>>
+```
 
-        ); 
+```tsx
+const sendGetUser = useSend<SampleMessages, "user:get">("user:get");
+
+const user = await sendGetUser({ id: "123" });
+// user is typed as { name: string; email: string }
+```
+
+### `useHandler<TRegistry, TKey>(key, handler)`
+
+Registers a handler for incoming messages on `key`. The handler is automatically unregistered when the component unmounts.
+
+```ts
+function useHandler<
+  TRegistry extends MessageRegistry,
+  TKey extends keyof TRegistry & string,
+>(key: TKey, handler: MessageHandler<TRegistry, TKey>): void
+```
+
+The handler receives `PayloadOf<TRegistry, TKey>` and must return `ResponseOf<TRegistry, TKey>` (sync or async).
+
+```tsx
+useHandler<SampleMessages, "user:get">("user:get", async (payload) => {
+  const user = await db.getUser(payload.id);
+  return { name: user.name, email: user.email };
+});
+```
+
+### `useFrameLink<TRegistry>()`
+
+Returns the raw `FrameLink<TRegistry>` instance for advanced use cases. Prefer the purpose-built hooks above for normal usage.
+
+```ts
+function useFrameLink<TRegistry extends MessageRegistry>(): FrameLink<TRegistry>
+```
+
+Throws if called outside a provider.
+
+---
+
+## Component example
+
+The following shows a minimal typed integration using the `SampleMessages` registry. This is the same pattern used in [`examples/parent.tsx`](./examples/parent.tsx) and [`examples/iframe.tsx`](./examples/iframe.tsx).
+
+### Shared registry (`sample-registry.ts`)
+
+```ts
+import type { MessageDefinition, MessageRegistry } from "frame-link";
+
+export interface SampleMessages extends MessageRegistry {
+  "user:get": MessageDefinition<{ id: string }, { name: string; email: string }>;
+  "user:update": MessageDefinition<{ id: string; name: string }, { success: boolean }>;
+  "notification:show": MessageDefinition<
+    { message: string; type: "info" | "error" },
+    void
+  >;
+}
+```
+
+### Parent side
+
+```tsx
+import React, { useRef } from "react";
+import { FrameLinkProvider, useConnection, useSend, useHandler } from "frame-link-react";
+import type { SampleMessages } from "./sample-registry";
+
+export default function ParentApp() {
+  return (
+    // Use your iframe's exact origin here — never "*" in production.
+    <FrameLinkProvider<SampleMessages>
+      options={{ targetOrigin: "https://your-iframe-origin.example.com" }}
+    >
+      <ParentContent />
+    </FrameLinkProvider>
+  );
+}
+
+function ParentContent() {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const { connect, connected, connecting, error } = useConnection();
+
+  const handleIframeLoad = async () => {
+    const contentWindow = iframeRef.current?.contentWindow;
+    if (contentWindow) {
+      await connect(contentWindow);
     }
+  };
 
-#### Register the target ( in this case it will be the iframe )
+  return (
+    <div>
+      {connecting && <p>Connecting…</p>}
+      {error && <p>Error: {error.message}</p>}
+      {connected && <UserPanel />}
+      <NotificationReceiver />
+      <iframe
+        ref={iframeRef}
+        src="https://your-iframe-origin.example.com"
+        onLoad={() => void handleIframeLoad()}
+      />
+    </div>
+  );
+}
 
-    import { useContext, useEffect, useRef } from "react";
-    import { FrameLinkContext } from "../src/FrameLinkProvider";
+function UserPanel() {
+  const sendGetUser = useSend<SampleMessages, "user:get">("user:get");
 
-    function MyComponent() {
-        const { registerTarget, ready, connected } = useContext(FrameLinkContext);
+  const handleClick = async () => {
+    const user = await sendGetUser({ id: "123" });
+    console.log(user.name, user.email);
+  };
 
-        const frameRef = useRef<any>();
+  return <button onClick={() => void handleClick()}>Get user</button>;
+}
 
-        useEffect(() => {
-
-            if (!!frameRef.current) {
-            registerTarget && registerTarget(frameRef.current);
-            }
-        }, [ready, frameRef]);
-
-        useEffect(() => {
-
-            console.log("connected", connected);
-        }, [connected]);
-
-        return (
-            <div>
-            <iframe ref={frameRef} src="www.something.com" />{" "}
-            </div>
-        );
+function NotificationReceiver() {
+  useHandler<SampleMessages, "notification:show">(
+    "notification:show",
+    (payload) => {
+      console.log(`[${payload.type}] ${payload.message}`);
     }
+  );
+  return null;
+}
+```
 
-#### Create an updater for a given key
+### Iframe side
 
-    import { useContext } from "react";
-    import { FrameLinkContext } from "../src/FrameLinkProvider";
+```tsx
+import React, { useEffect } from "react";
+import { FrameLinkProvider, useConnection, useHandler, useSend } from "frame-link-react";
+import type { SampleMessages } from "./sample-registry";
 
-    function MyButtonComponent() {
-    const { usePostMessage } = useContext(FrameLinkContext);
+export default function IframeApp() {
+  return (
+    <FrameLinkProvider<SampleMessages>
+      options={{ targetOrigin: "https://your-parent-origin.example.com" }}
+    >
+      <IframeContent />
+    </FrameLinkProvider>
+  );
+}
 
-    const updateTest = usePostMessage("test");
+function IframeContent() {
+  const { connect, connected } = useConnection();
 
-    return (
-        <button
-            onClick={() =>
-                updateTest({ myPayload: "this is a test" }, () => {
-                // Optional callback... well it is supposed to be. I need to fix the type
-                })
-            }
-        >
-            send test
-        </button>
-    );
-    }
+  useEffect(() => {
+    void connect(window.parent);
+  }, [connect]);
 
-#### Subscribe to a key from the parent
+  return connected ? <Handlers /> : <p>Connecting…</p>;
+}
 
-    import { useContext } from "react";
-    import { FrameLinkContext } from "../src/FrameLinkProvider";
+function Handlers() {
+  // Handle user:get requests from the parent.
+  useHandler<SampleMessages, "user:get">("user:get", async (payload) => {
+    return { name: `User ${payload.id}`, email: `${payload.id}@example.com` };
+  });
 
-    function MyNotificationComponent() {
-        const { useSubscribe } = useContext(FrameLinkContext);
+  // Send a notification to the parent.
+  const sendNotification = useSend<SampleMessages, "notification:show">(
+    "notification:show"
+  );
 
-        const testTwo = useSubscribe < { myPayload: string } > "test-two";
+  return (
+    <button onClick={() => void sendNotification({ message: "Hello!", type: "info" })}>
+      Notify parent
+    </button>
+  );
+}
+```
 
-        // This will update whenever "test-two" gets new data.
+---
 
-        return <div>{testTwo?.myPayload}</div>;
-    }
+## Connection-status usage
 
-### On iFrame
+Destructure `connected`, `connecting`, and `error` from `useConnection` to drive UI state:
 
-#### Wrap componets in the FrameLinkProvider
+```tsx
+function StatusBadge() {
+  const { connected, connecting, error } = useConnection();
 
-    import { useContext, useEffect, useRef } from "react";
-    import FrameLinkProvider, { FrameLinkContext } from "../src/FrameLinkProvider";
+  if (connecting) return <span className="badge badge-warning">Connecting…</span>;
+  if (error)      return <span className="badge badge-error">Error: {error.message}</span>;
+  if (connected)  return <span className="badge badge-success">Connected</span>;
+  return <span className="badge badge-neutral">Disconnected</span>;
+}
+```
 
-    export default function App() {
-        return (
+---
 
-            <FrameLinkProvider>
-                <MyComponent />
-                <MyButtonComponent />
-                <MyNotificationComponent />
-            </FrameLinkProvider>
+## Security
 
-        ); 
-    }
+**Always supply an explicit `targetOrigin`.** Using `"*"` disables the browser's origin check and allows any page to receive your messages.
 
-#### Register the target ( in this case it will be window.parent )
+```tsx
+// Good — messages go only to the expected origin.
+<FrameLinkProvider<SampleMessages>
+  options={{ targetOrigin: "https://trusted-iframe.example.com" }}
+>
 
-    import { useContext, useEffect } from "react";
-    import { FrameLinkContext } from "../src/FrameLinkProvider";
+// Bad — never use in production.
+<FrameLinkProvider<SampleMessages>
+  options={{ targetOrigin: "*" }} // demo-only, do not copy
+>
+```
 
-    function MyComponent() {
-    const { registerTarget, ready, connected } = useContext(FrameLinkContext);
+> The files in `examples/parent.tsx` and `examples/iframe.tsx` use `targetOrigin: "*"` for local development convenience only. Do not copy that setting into production code.
 
-    useEffect(() => {
-
-        if (ready && registerTarget) {
-        // Register the target ( in this case the parent )
-
-        registerTarget(window.parent);
-        }
-    }, [ready]);
-
-    useEffect(() => {
-
-        // Wait for them to connect ( sends a ping and gets a reply ping )
-
-        console.log("connected", connected);
-    }, [connected]);
-
-    return <div></div>;
-    }
-
-#### Create an updater for a given key
-
-    import { useContext } from "react";
-    import { FrameLinkContext } from "../src/FrameLinkProvider";
-
-    function MyButtonComponent() {
-    const { usePostMessage } = useContext(FrameLinkContext);
-
-    const updateTestTwo = usePostMessage("test-two");
-
-    return (
-        <button
-            onClick={() =>
-                // Call the updater with the data to send to the other frame.
-
-                updateTestTwo({ myPayload: "this is a test-two test" }, (replyData) => {
-                // Optional callback... See subscribe
-                // If a reply callback is included, when this is received on the parent, we will send a response back
-                // If the parent includes a reply callback when subscribing, replyData will be whatever that callback returns.
-                })
-            }
-        >
-            send test
-        </button>
-    );
-    }
-
-    const optionalReplyFunction = (latestData) => {
-        return { anything: "you want" }; //
-    };
-
-#### Subscribe to messages from the parent
-
-    import { useContext } from "react";
-    import { FrameLinkContext } from "../src/FrameLinkProvider";
-
-    function MyNotificationComponent() {
-        const { useSubscribe } = useContext(FrameLinkContext);
-
-        const test =
-            useSubscribe < { myPayload: string } > ("test", optionalReplyFunction);
-
-        // This will update whenever "test-two" gets new data.
-
-        return <div>{test?.myPayload}</div>;
-    }
+For a full discussion of the origin-validation model, replay-attack mitigations, and CSP recommendations, see the **Security** section of the [frame-link README](../frame-link-ts/README.md).

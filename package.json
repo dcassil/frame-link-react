@@ -1,6 +1,6 @@
 {
   "name": "frame-link-react",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "Type-safe React hooks for iframe communication with frame-link",
   "type": "module",
   "main": "dist/index.js",
@@ -11,6 +11,11 @@
       "import": "./dist/index.js"
     }
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "engines": {
     "node": ">=18.0.0"
   },
@@ -19,7 +24,8 @@
     "url": "https://github.com/dcassil/frame-link-react"
   },
   "scripts": {
-    "build": "tsc",
+    "prepare": "husky",
+    "build": "tsc -p tsconfig.build.json",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
     "typecheck": "tsc --noEmit",
@@ -27,12 +33,15 @@
     "format:check": "prettier --check \"src/**/*.{ts,tsx}\"",
     "check": "npm run typecheck && npm run lint && npm run format:check",
     "test": "jest --config=jest.config.cjs",
-    "test:coverage": "jest --coverage --config=jest.config.cjs"
+    "test:coverage": "jest --coverage --config=jest.config.cjs",
+    "depcruise": "depcruise src",
+    "demo": "vite --config examples/vite.config.ts",
+    "demo:build": "vite build --config examples/vite.config.ts"
   },
   "author": "Daniel Cassil",
   "license": "MIT",
   "peerDependencies": {
-    "frame-link": "^3.0.0",
+    "frame-link": "^4.0.0",
     "react": ">=18"
   },
   "devDependencies": {
@@ -45,14 +54,18 @@
     "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/react": "^14.2.1",
     "@types/jest": "^29.5.12",
+    "@types/node": "^20.19.43",
     "@types/react": "^18.2.48",
     "@types/react-dom": "^18.2.18",
+    "@vitejs/plugin-react": "^4.3.4",
     "babel-jest": "^29.7.0",
+    "dependency-cruiser": "^17.4.3",
+    "husky": "^9.1.7",
     "eslint": "^9.39.3",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
-    "frame-link": "^3.0.0",
+    "frame-link": "^4.0.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "prettier": "^3.8.1",
@@ -60,7 +73,8 @@
     "react-dom": "^18.2.0",
     "ts-jest": "^29.4.6",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.56.1"
+    "typescript-eslint": "^8.56.1",
+    "vite": "^5.4.11"
   },
   "keywords": [
     "iframe",
