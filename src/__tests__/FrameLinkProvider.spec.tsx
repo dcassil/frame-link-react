@@ -9,7 +9,9 @@ jest.mock("frame-link", () => ({
   createFrameLink: jest.fn(),
 }));
 
-const mockCreateFrameLink = createFrameLink as jest.MockedFunction<typeof createFrameLink>;
+const mockCreateFrameLink = createFrameLink as jest.MockedFunction<
+  typeof createFrameLink
+>;
 
 describe("FrameLinkProvider", () => {
   const mockFrameLink = {
@@ -23,14 +25,14 @@ describe("FrameLinkProvider", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockCreateFrameLink.mockReturnValue(mockFrameLink as any);
+    mockCreateFrameLink.mockReturnValue(mockFrameLink);
   });
 
   it("should create FrameLink instance on mount", () => {
     render(
       <FrameLinkProvider options={defaultTestOptions}>
         <div>child</div>
-      </FrameLinkProvider>
+      </FrameLinkProvider>,
     );
 
     expect(mockCreateFrameLink).toHaveBeenCalledWith(defaultTestOptions);
@@ -40,13 +42,15 @@ describe("FrameLinkProvider", () => {
   it("should provide context to children", () => {
     function TestChild() {
       const context = useContext(FrameLinkContext);
-      return <div data-testid="has-context">{context !== null ? "yes" : "no"}</div>;
+      return (
+        <div data-testid="has-context">{context !== null ? "yes" : "no"}</div>
+      );
     }
 
     render(
       <FrameLinkProvider options={defaultTestOptions}>
         <TestChild />
-      </FrameLinkProvider>
+      </FrameLinkProvider>,
     );
 
     expect(screen.getByTestId("has-context")).toHaveTextContent("yes");
@@ -56,7 +60,7 @@ describe("FrameLinkProvider", () => {
     const { unmount } = render(
       <FrameLinkProvider options={defaultTestOptions}>
         <div>child</div>
-      </FrameLinkProvider>
+      </FrameLinkProvider>,
     );
 
     expect(mockFrameLink.destroy).not.toHaveBeenCalled();
@@ -71,8 +75,12 @@ describe("FrameLinkProvider", () => {
       const context = useContext(FrameLinkContext);
       return (
         <div>
-          <span data-testid="connected">{String(context?.connected ?? false)}</span>
-          <span data-testid="connecting">{String(context?.connecting ?? false)}</span>
+          <span data-testid="connected">
+            {String(context?.connected ?? false)}
+          </span>
+          <span data-testid="connecting">
+            {String(context?.connecting ?? false)}
+          </span>
         </div>
       );
     }
@@ -80,7 +88,7 @@ describe("FrameLinkProvider", () => {
     render(
       <FrameLinkProvider options={defaultTestOptions}>
         <TestChild />
-      </FrameLinkProvider>
+      </FrameLinkProvider>,
     );
 
     expect(screen.getByTestId("connected")).toHaveTextContent("false");
@@ -91,18 +99,18 @@ describe("FrameLinkProvider", () => {
     const { rerender } = render(
       <FrameLinkProvider options={defaultTestOptions}>
         <div>child</div>
-      </FrameLinkProvider>
+      </FrameLinkProvider>,
     );
 
     expect(mockCreateFrameLink).toHaveBeenCalledTimes(1);
     expect(mockFrameLink.destroy).not.toHaveBeenCalled();
 
     const newOptions = { ...defaultTestOptions, timeout: 10000 };
-    
+
     rerender(
       <FrameLinkProvider options={newOptions}>
         <div>child</div>
-      </FrameLinkProvider>
+      </FrameLinkProvider>,
     );
 
     expect(mockFrameLink.destroy).toHaveBeenCalledTimes(1);

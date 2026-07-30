@@ -10,13 +10,13 @@ import type { FrameLinkContextValue } from "../provider/types.js";
  * @internal
  */
 export function useFrameLinkContext<
-  TRegistry extends MessageRegistry
+  TRegistry extends MessageRegistry,
 >(): FrameLinkContextValue<TRegistry> {
   const context = useContext(FrameLinkContext);
 
   if (context === null) {
     throw new Error(
-      "useFrameLinkContext must be used within a FrameLinkProvider"
+      "useFrameLinkContext must be used within a FrameLinkProvider",
     );
   }
 

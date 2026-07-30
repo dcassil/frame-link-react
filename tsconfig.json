@@ -4,15 +4,16 @@
     "target": "ES2023",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "lib": ["ES2023", "DOM", "DOM.Iterable"],
-
+    "lib": [
+      "ES2023",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "jsx": "react-jsx",
-
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
     "outDir": "./dist",
-
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
@@ -23,7 +24,6 @@
     "noImplicitThis": true,
     "useUnknownInCatchVariables": true,
     "alwaysStrict": true,
-
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "exactOptionalPropertyTypes": true,
@@ -34,22 +34,30 @@
     "noImplicitOverride": true,
     "allowUnusedLabels": false,
     "allowUnreachableCode": false,
-
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
-
     "noEmitOnError": true,
     "removeComments": true,
     "importHelpers": true,
-
     "skipLibCheck": true,
-    "types": ["node", "jest", "@testing-library/jest-dom"],
+    "types": [
+      "node",
+      "jest",
+      "@testing-library/jest-dom"
+    ],
     "baseUrl": "src/",
     "resolveJsonModule": true
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx"],
-  "exclude": ["node_modules", "dist", "coverage"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "coverage"
+  ]
 }

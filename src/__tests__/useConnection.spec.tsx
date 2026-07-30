@@ -7,7 +7,9 @@ jest.mock("frame-link", () => ({
   createFrameLink: jest.fn(),
 }));
 
-const mockCreateFrameLink = createFrameLink as jest.MockedFunction<typeof createFrameLink>;
+const mockCreateFrameLink = createFrameLink as jest.MockedFunction<
+  typeof createFrameLink
+>;
 
 describe("useConnection", () => {
   const mockFrameLink = {
@@ -21,7 +23,7 @@ describe("useConnection", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockCreateFrameLink.mockReturnValue(mockFrameLink as any);
+    mockCreateFrameLink.mockReturnValue(mockFrameLink);
     mockFrameLink.connect.mockResolvedValue(undefined);
   });
 
@@ -95,7 +97,7 @@ describe("useConnection", () => {
     });
 
     const firstConnect = result.current.connect;
-    
+
     rerender();
 
     expect(result.current.connect).toBe(firstConnect);

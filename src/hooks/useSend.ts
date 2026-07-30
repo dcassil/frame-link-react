@@ -1,8 +1,4 @@
-import type {
-  MessageRegistry,
-  PayloadOf,
-  ResponseOf,
-} from "frame-link";
+import type { MessageRegistry, PayloadOf, ResponseOf } from "frame-link";
 import { useCallback } from "react";
 import { useFrameLink } from "./useFrameLink.js";
 
@@ -11,8 +7,10 @@ import { useFrameLink } from "./useFrameLink.js";
  */
 export type SendFunction<
   TRegistry extends MessageRegistry,
-  TKey extends keyof TRegistry & string
-> = (payload: PayloadOf<TRegistry, TKey>) => Promise<ResponseOf<TRegistry, TKey>>;
+  TKey extends keyof TRegistry & string,
+> = (
+  payload: PayloadOf<TRegistry, TKey>,
+) => Promise<ResponseOf<TRegistry, TKey>>;
 
 /**
  * Hook to create a type-safe message sender for a specific message key.
@@ -40,15 +38,17 @@ export type SendFunction<
  */
 export function useSend<
   TRegistry extends MessageRegistry,
-  TKey extends keyof TRegistry & string
+  TKey extends keyof TRegistry & string,
 >(key: TKey): SendFunction<TRegistry, TKey> {
   const frameLink = useFrameLink<TRegistry>();
 
   const send = useCallback(
-    async (payload: PayloadOf<TRegistry, TKey>): Promise<ResponseOf<TRegistry, TKey>> => {
+    async (
+      payload: PayloadOf<TRegistry, TKey>,
+    ): Promise<ResponseOf<TRegistry, TKey>> => {
       return await frameLink.send(key, payload);
     },
-    [frameLink, key]
+    [frameLink, key],
   );
 
   return send;

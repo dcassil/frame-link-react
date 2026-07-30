@@ -1,8 +1,4 @@
-import type {
-  FrameLink,
-  FrameLinkOptions,
-  MessageRegistry,
-} from "frame-link";
+import type { FrameLink, FrameLinkOptions, MessageRegistry } from "frame-link";
 import type { ReactNode } from "react";
 
 /**

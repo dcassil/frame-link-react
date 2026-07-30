@@ -26,11 +26,8 @@ import { useFrameLink } from "./useFrameLink.js";
  */
 export function useHandler<
   TRegistry extends MessageRegistry,
-  TKey extends keyof TRegistry & string
->(
-  key: TKey,
-  handler: MessageHandler<TRegistry, TKey>
-): void {
+  TKey extends keyof TRegistry & string,
+>(key: TKey, handler: MessageHandler<TRegistry, TKey>): void {
   const frameLink = useFrameLink<TRegistry>();
   const handlerRef = useRef(handler);
 
@@ -40,7 +37,7 @@ export function useHandler<
 
   useEffect((): (() => void) => {
     const wrappedHandler: MessageHandler<TRegistry, TKey> = (
-      payload: PayloadOf<TRegistry, TKey>
+      payload: PayloadOf<TRegistry, TKey>,
     ): ReturnType<MessageHandler<TRegistry, TKey>> => {
       return handlerRef.current(payload);
     };

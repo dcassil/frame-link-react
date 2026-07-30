@@ -1,4 +1,8 @@
 node_modules
 dist
+coverage
+*.log
 *.tgz
-# dist/*
+# dist/*.DS_Store
+.DS_Store
+dist-demo

@@ -1,13 +1,19 @@
 import { act, renderHook } from "@testing-library/react";
 import { createFrameLink } from "frame-link";
 import { useSend } from "../hooks/useSend.js";
-import { createWrapper, defaultTestOptions, type TestMessages } from "./test-utils.js";
+import {
+  createWrapper,
+  defaultTestOptions,
+  type TestMessages,
+} from "./test-utils.js";
 
 jest.mock("frame-link", () => ({
   createFrameLink: jest.fn(),
 }));
 
-const mockCreateFrameLink = createFrameLink as jest.MockedFunction<typeof createFrameLink>;
+const mockCreateFrameLink = createFrameLink as jest.MockedFunction<
+  typeof createFrameLink
+>;
 
 describe("useSend", () => {
   const mockFrameLink = {
@@ -21,18 +27,18 @@ describe("useSend", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockCreateFrameLink.mockReturnValue(mockFrameLink as any);
+    mockCreateFrameLink.mockReturnValue(mockFrameLink);
     mockFrameLink.send.mockResolvedValue({ reply: "pong" });
   });
 
   it("should return a memoized sender function", () => {
     const { result, rerender } = renderHook(
       () => useSend<TestMessages, "test:ping">("test:ping"),
-      { wrapper: createWrapper(defaultTestOptions) }
+      { wrapper: createWrapper(defaultTestOptions) },
     );
 
     const firstSend = result.current;
-    
+
     rerender();
 
     expect(result.current).toBe(firstSend);
@@ -41,7 +47,7 @@ describe("useSend", () => {
   it("should call frameLink.send with correct arguments", async () => {
     const { result } = renderHook(
       () => useSend<TestMessages, "test:ping">("test:ping"),
-      { wrapper: createWrapper(defaultTestOptions) }
+      { wrapper: createWrapper(defaultTestOptions) },
     );
 
     const payload = { message: "hello" };
@@ -59,11 +65,11 @@ describe("useSend", () => {
 
     const { result } = renderHook(
       () => useSend<TestMessages, "test:ping">("test:ping"),
-      { wrapper: createWrapper(defaultTestOptions) }
+      { wrapper: createWrapper(defaultTestOptions) },
     );
 
     let response: { reply: string } | undefined;
-    
+
     await act(async () => {
       response = await result.current({ message: "hello" });
     });
@@ -77,13 +83,13 @@ describe("useSend", () => {
 
     const { result } = renderHook(
       () => useSend<TestMessages, "test:ping">("test:ping"),
-      { wrapper: createWrapper(defaultTestOptions) }
+      { wrapper: createWrapper(defaultTestOptions) },
     );
 
     await expect(
       act(async () => {
         await result.current({ message: "hello" });
-      })
+      }),
     ).rejects.toThrow("Send failed");
   });
 
@@ -93,11 +99,11 @@ describe("useSend", () => {
       {
         wrapper: createWrapper(defaultTestOptions),
         initialProps: { key: "test:ping" },
-      }
+      },
     );
 
     const firstSend = result.current;
-    
+
     rerender({ key: "test:getData" });
 
     expect(result.current).not.toBe(firstSend);

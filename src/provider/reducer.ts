@@ -13,7 +13,7 @@ export const initialConnectionState: ConnectionState = {
  */
 export function connectionReducer(
   _state: ConnectionState,
-  action: ConnectionAction
+  action: ConnectionAction,
 ): ConnectionState {
   switch (action.type) {
     case "CONNECT_START": {
