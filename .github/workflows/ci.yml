@@ -2,70 +2,27 @@ name: CI
 
 on:
   push:
+    branches: ["**"]
   pull_request:
-
-# frame-link-react depends on `frame-link: file:../frame-link-ts` in its package.json.
-# That file: reference resolves against the local filesystem path ../frame-link-ts, which
-# does not exist in a normal CI checkout of this repo alone. To satisfy it, we check out
-# the sibling frame-link-ts repo into the expected relative path before running npm ci.
-# Once frame-link is published to npm, the file: devDependency and this checkout step
-# can both be replaced by the published package version.
 
 jobs:
   ci:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Check out frame-link-react-ts
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
         with:
-          path: frame-link-react-ts
+          version: 9
 
-      # Checkout the sibling repo into ../frame-link-ts (relative to the react package)
-      # so that `file:../frame-link-ts` in package.json resolves correctly.
-      - name: Check out frame-link-ts (sibling dependency)
-        uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          repository: dcassil/frame-link-ts
-          path: frame-link-ts
+          node-version: 20
+          cache: pnpm
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: |
-            frame-link-ts/package-lock.json
-            frame-link-react-ts/package-lock.json
-
-      - name: Build frame-link-ts (sibling)
-        working-directory: frame-link-ts
-        run: npm ci && npm run build
-
-      - name: Install dependencies
-        working-directory: frame-link-react-ts
-        run: npm ci
-
-      - name: Typecheck
-        working-directory: frame-link-react-ts
-        run: npm run typecheck
-
-      - name: Lint
-        working-directory: frame-link-react-ts
-        run: npm run lint
-
-      - name: Format check
-        working-directory: frame-link-react-ts
-        run: npm run format:check
-
-      - name: Test
-        working-directory: frame-link-react-ts
-        run: npm test
-
-      - name: Build
-        working-directory: frame-link-react-ts
-        run: npm run build
-
-      - name: Pack dry-run
-        working-directory: frame-link-react-ts
-        run: npm pack --dry-run
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run typecheck
+      - run: pnpm run lint
+      - run: pnpm test
+      - run: pnpm run build
+      - run: pnpm run depcruise
