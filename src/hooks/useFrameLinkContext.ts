@@ -1,7 +1,9 @@
 import type { MessageRegistry } from "frame-link";
 import { useContext } from "react";
-import { FrameLinkContext } from "../provider/context.js";
-import type { FrameLinkContextValue } from "../provider/types.js";
+import {
+  FrameLinkContext,
+  type FrameLinkContextValue,
+} from "../provider/index.js";
 
 /**
  * Internal hook to access the FrameLink context.
