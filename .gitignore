@@ -6,3 +6,6 @@ coverage
 # dist/*.DS_Store
 .DS_Store
 dist-demo
+
+# iCloud Drive sync-conflict duplicates
+* [0-9].*

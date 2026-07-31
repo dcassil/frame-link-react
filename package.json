@@ -1,6 +1,6 @@
 {
   "name": "frame-link-react",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "description": "Type-safe React hooks for iframe communication with frame-link",
   "type": "module",
   "main": "dist/index.js",
