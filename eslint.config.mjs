@@ -60,12 +60,21 @@ export default tseslint.config(
       "import/resolver": {
         typescript: { project: "./tsconfig.json" },
       },
+      // Element descriptors are always folder-oriented in v7. `provider` and
+      // `hooks` are listed first with `stopMatching` so their files classify as
+      // those elements; anything else under `src` (i.e. the `src/index.ts`
+      // package barrel) falls through to `root`. This avoids pointing an element
+      // descriptor at a single `.ts` file (which v7 flags as a file-pattern).
       "boundaries/elements": [
-        { type: "root", mode: "file", pattern: "src/index.ts" },
-        { type: "provider", mode: "folder", pattern: "src/provider" },
-        { type: "hooks", mode: "folder", pattern: "src/hooks" },
+        { type: "provider", pattern: "src/provider", stopMatching: true },
+        { type: "hooks", pattern: "src/hooks", stopMatching: true },
+        { type: "root", pattern: "src" },
       ],
       "boundaries/ignore": ["**/*.test.ts", "**/*.test.tsx", "**/__tests__/**"],
+      // Migration to v7 is complete (canonical `dependencies` rule, no legacy
+      // rule names, no deprecated `mode`/`entry-point`/`no-private`). Disable
+      // legacy-syntax detection now that migration is done.
+      "boundaries/legacy-warnings": false,
     },
     rules: {
       // React
@@ -338,21 +347,61 @@ export default tseslint.config(
       ],
 
       // ── Module boundaries (guard-rails spec) ─────────────────────────────
-      "boundaries/element-types": [
+      // v7 `dependencies` rule (canonical, non-deprecated). Folds in the old
+      // `element-types` (which types may import which) AND the old
+      // `entry-point` / `no-private` enforcement (cross-element imports must go
+      // through the module's public barrel `index.ts`) by requiring the target
+      // element's `fileInternalPath` to be the barrel on every allowed edge.
+      "boundaries/dependencies": [
         "error",
         {
           default: "disallow",
           message:
-            "Boundary violation: '{{from}}' may not import '{{to}}'. Allowed edges are declared in eslint.config.mjs.",
-          rules: [
-            { from: "root", allow: ["provider", "hooks"] },
-            { from: "hooks", allow: ["provider", "hooks"] },
-            { from: "provider", allow: ["provider"] },
+            "Boundary violation: '{{from.type}}' may not import '{{to.type}}'. Allowed edges are declared in eslint.config.mjs, and cross-module imports must go through the module's public entry (index.ts).",
+          policies: [
+            {
+              from: { element: { type: "root" } },
+              allow: {
+                to: {
+                  element: {
+                    types: { anyOf: ["provider", "hooks"] },
+                    fileInternalPath: "index.ts",
+                  },
+                },
+              },
+              message:
+                "Boundary violation: 'root' may only import 'provider' or 'hooks' through their public entry (index.ts).",
+            },
+            {
+              from: { element: { type: "hooks" } },
+              allow: {
+                to: {
+                  element: {
+                    types: { anyOf: ["provider", "hooks"] },
+                    fileInternalPath: "index.ts",
+                  },
+                },
+              },
+              message:
+                "Boundary violation: 'hooks' may only import 'provider' or 'hooks' through their public entry (index.ts).",
+            },
+            {
+              from: { element: { type: "provider" } },
+              allow: {
+                to: {
+                  element: {
+                    type: "provider",
+                    fileInternalPath: "index.ts",
+                  },
+                },
+              },
+              message:
+                "Boundary violation: 'provider' may only import 'provider' through its public entry (index.ts).",
+            },
           ],
         },
       ],
-      "boundaries/no-private": "error",
-      "boundaries/no-unknown": "error",
+      "boundaries/no-unknown-dependencies": "error",
     },
   },
   {
